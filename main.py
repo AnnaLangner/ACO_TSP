@@ -2,10 +2,6 @@ import random
 import argparse
 from utils import functions
 
-NUM_ITERATIONS = 50
-NUM_ANTS = 10
-RHO = 0.5     # Pheromone evaporation rate
-
 
 def ant_colony_optimization(filename, num_ants, num_iterations, rho):
     coords = functions.read_tsp_file(filename)
@@ -13,19 +9,14 @@ def ant_colony_optimization(filename, num_ants, num_iterations, rho):
     distance_matrix = functions.build_distance_matrix(coords)
     pheromone_matrix = functions.initialize_pheromones(n)
 
-    global NUM_ANTS, NUM_ITERATIONS, RHO
-    RHO = rho
-    NUM_ANTS = num_ants
-    NUM_ITERATIONS = num_iterations
-
     best_length = float('inf')
     best_tour = None
 
-    for iteration in range(NUM_ITERATIONS):
+    for iteration in range(num_iterations):
         ants = []
         lengths = []
 
-        for ant in range(NUM_ANTS):
+        for ant in range(num_ants):
             visited = [False] * n
             tour = []
             total_length = 0.0
@@ -48,11 +39,15 @@ def ant_colony_optimization(filename, num_ants, num_iterations, rho):
                 best_length = total_length
                 best_tour = tour
 
-        functions.update_pheromones(ants, lengths, pheromone_matrix, distance_matrix, n)
+        functions.update_pheromones(ants, lengths, pheromone_matrix, distance_matrix, n, rho, num_ants)
 
-        print(f"Iteration {iteration + 1}: Best Length = {best_length:.2f} km")
+        # Left for debugging purposes
+        # print(f"Iteration {iteration + 1}: Best Length = {best_length:.2f} km")
 
-    return best_tour, best_length
+    return {
+        'best_path': best_tour,
+        'best_cost': best_length
+    }
 
 
 if __name__ == '__main__':

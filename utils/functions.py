@@ -1,6 +1,5 @@
 import random
 import math
-import main
 
 ALPHA = 1.0   # Influence of pheromone
 BETA = 2.0    # Influence of distance
@@ -81,12 +80,12 @@ def choose_next_city(current_city, visited, n, pheromone_matrix, distance_matrix
     return -1
 
 
-def update_pheromones(ants, lengths, pheromone_matrix, distance_matrix, n):
+def update_pheromones(ants, lengths, pheromone_matrix, distance_matrix, n, rho, num_ants):
     for i in range(n):
         for j in range(n):
-            pheromone_matrix[i][j] *= (1 - main.RHO)
+            pheromone_matrix[i][j] *= (1 - rho)
 
-    for k in range(main.NUM_ANTS):
+    for k in range(num_ants):
         ant = ants[k]
         length = lengths[k]
         for i in range(len(ant) - 1):
