@@ -1,16 +1,22 @@
 import random
+import argparse
 from utils import functions
 
-NUM_ANTS = 10
 NUM_ITERATIONS = 50
+NUM_ANTS = 10
+RHO = 0.5     # Pheromone evaporation rate
 
 
-def ant_colony_optimization(filename):
+def ant_colony_optimization(filename, num_ants, num_iterations, rho):
     coords = functions.read_tsp_file(filename)
     n = len(coords)
     distance_matrix = functions.build_distance_matrix(coords)
-
     pheromone_matrix = functions.initialize_pheromones(n)
+
+    global NUM_ANTS, NUM_ITERATIONS, RHO
+    RHO = rho
+    NUM_ANTS = num_ants
+    NUM_ITERATIONS = num_iterations
 
     best_length = float('inf')
     best_tour = None
@@ -51,7 +57,13 @@ def ant_colony_optimization(filename):
 
 if __name__ == '__main__':
     tsp_file = 'resources/berlin52.tsp'
-    best_tour, best_length = ant_colony_optimization(tsp_file)
+    parser = argparse.ArgumentParser(description="Ant Colony Optimization for TSP")
+    parser.add_argument("tsp_file", type=str, help="Path to the TSP file")
+    parser.add_argument("--num_ants", type=int, default=50, help="Number of ants (default: 50)")
+    parser.add_argument("--num_iterations", type=int, default=100, help="Number of iterations (default: 100)")
+    parser.add_argument("--rho", type=float, default=0.3, help="Number of rho between 0.1 and 1")
+    args = parser.parse_args()
 
+    best_tour, best_length = ant_colony_optimization(tsp_file, args.num_ants, args.num_iterations, args.rho)
     print("\nBest tour:", best_tour)
     print("Best tour length:", best_length, "km")

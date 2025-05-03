@@ -38,4 +38,4 @@ Raising the inverse of the distance to the power of BETA introduces a non-linear
 
 ## Running project
 
-To run the project in the terminal, type ```python main.py```
+To run the project in the terminal with argument , type ```python3 main.py 'resources/berlin52.tsp' --num_ants 20 --num_iterations 10 --rho 0.3```

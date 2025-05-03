@@ -1,11 +1,10 @@
 import random
 import math
+import main
 
 ALPHA = 1.0   # Influence of pheromone
 BETA = 2.0    # Influence of distance
-RHO = 0.5     # Pheromone evaporation rate
 Q = 100.0     # Constant for pheromone deposition
-NUM_ANTS = 10
 
 
 def calculate_distance(lat1, lon1, lat2, lon2):
@@ -85,9 +84,9 @@ def choose_next_city(current_city, visited, n, pheromone_matrix, distance_matrix
 def update_pheromones(ants, lengths, pheromone_matrix, distance_matrix, n):
     for i in range(n):
         for j in range(n):
-            pheromone_matrix[i][j] *= (1 - RHO)
+            pheromone_matrix[i][j] *= (1 - main.RHO)
 
-    for k in range(NUM_ANTS):
+    for k in range(main.NUM_ANTS):
         ant = ants[k]
         length = lengths[k]
         for i in range(len(ant) - 1):
