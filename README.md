@@ -38,4 +38,13 @@ Raising the inverse of the distance to the power of BETA introduces a non-linear
 
 ## Running project
 
-To run the project in the terminal with argument , type ```python3 main.py 'resources/berlin52.tsp' --num_ants 20 --num_iterations 10 --rho 0.3```
+To run backend in the terminal with argument , type ```python3 main.py 'resources/berlin52.tsp' --num_ants 20 --num_iterations 10 --rho 0.3```
+
+To run user interface in terminal type ```python3 aco_tsp_gui.py```
+A user window will appear where you can add parameters such as:
+* Path to tsp file `resources/att48.tsp`
+* Number of ants `50`
+* Number of iterations `100`
+* Pheromone evaporation rate `0.3`
+
+After clicking the submit button, the best route is calculated. It gives the city numbers in the order the ant passed through, as well as the best route length.
