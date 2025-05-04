@@ -1,5 +1,6 @@
-import random
 import math
+import random
+import matplotlib.pyplot as plt
 
 ALPHA = 1.0   # Influence of pheromone
 BETA = 2.0    # Influence of distance
@@ -93,3 +94,20 @@ def update_pheromones(ants, lengths, pheromone_matrix, distance_matrix, n, rho, 
             next_city = ant[i + 1]
             pheromone_matrix[current_city][next_city] += Q / length
             pheromone_matrix[next_city][current_city] += Q / length
+
+
+def plot_tour(coords, tour, title="Best Tour"):
+    x = [coords[city][0] for city in tour] + [coords[tour[0]][0]]
+    y = [coords[city][1] for city in tour] + [coords[tour[0]][1]]
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(x, y, 'o-', color='blue', label='Path')
+    for i, city in enumerate(tour):
+        plt.text(coords[city][0], coords[city][1], str(city), fontsize=9, color='red')
+    plt.title(title)
+    plt.xlabel("X")
+    plt.ylabel("Y")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()

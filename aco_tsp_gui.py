@@ -1,6 +1,7 @@
+import main
 from tkinter import *
 from tkinter import ttk
-import main
+from utils import functions
 
 
 def get_parameters():
@@ -10,7 +11,7 @@ def get_parameters():
         number_of_iterations = int(iterations_entry.get())
         rho = float(evaporation_entry.get())
 
-        if not (tsp_file is not str):
+        if not isinstance(tsp_file, str):
             print("Enter the path to the file as a string.")
             return
         if not (1 <= number_of_ants <= 100):
@@ -25,7 +26,10 @@ def get_parameters():
 
         result = main.ant_colony_optimization(tsp_file, number_of_ants, number_of_iterations, rho)
 
-        result_label.config(text=f"Best tour: {result['best_path']}\nBest tour length: {result['best_cost']}")
+        result_label.config(text=f"Best tour: {result['best_path']}\nBest tour length: {result['best_cost']} km")
+
+        coords = functions.read_tsp_file(tsp_file)
+        functions.plot_tour(coords, result['best_path'], title="ACO Best Tour")
 
     except ValueError:
         result_label.config(text="Please enter valid numbers.")

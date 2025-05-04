@@ -59,6 +59,15 @@ if __name__ == '__main__':
     parser.add_argument("--rho", type=float, default=0.3, help="Number of rho between 0.1 and 1")
     args = parser.parse_args()
 
-    best_tour, best_length = ant_colony_optimization(tsp_file, args.num_ants, args.num_iterations, args.rho)
-    print("\nBest tour:", best_tour)
-    print("Best tour length:", best_length, "km")
+    result = ant_colony_optimization(
+        args.tsp_file,
+        args.num_ants,
+        args.num_iterations,
+        args.rho
+    )
+
+    coords = functions.read_tsp_file(args.tsp_file)
+    print("\nBest tour:", result['best_path'])
+    print("Best tour length:", result['best_cost'], "km")
+
+    functions.plot_tour(coords, result['best_path'], title="ACO Best Tour")
