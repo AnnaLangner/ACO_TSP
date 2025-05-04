@@ -96,6 +96,7 @@ def update_pheromones(ants, lengths, pheromone_matrix, distance_matrix, n, rho, 
             pheromone_matrix[next_city][current_city] += Q / length
 
 
+# for version in CLI
 def plot_tour(coords, tour, title="Best Tour"):
     x = [coords[city][0] for city in tour] + [coords[tour[0]][0]]
     y = [coords[city][1] for city in tour] + [coords[tour[0]][1]]

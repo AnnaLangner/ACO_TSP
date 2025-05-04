@@ -2,6 +2,8 @@ import main
 from tkinter import *
 from tkinter import ttk
 from utils import functions
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 def get_parameters():
@@ -29,7 +31,7 @@ def get_parameters():
         result_label.config(text=f"Best tour: {result['best_path']}\nBest tour length: {result['best_cost']} km")
 
         coords = functions.read_tsp_file(tsp_file)
-        functions.plot_tour(coords, result['best_path'], title="ACO Best Tour")
+        show_plot_in_tkinter(coords, result['best_path'])
 
     except ValueError:
         result_label.config(text="Please enter valid numbers.")
@@ -38,6 +40,7 @@ def get_parameters():
 
 
 root = Tk()
+canvas_widget = None
 root.title("ACO TSP - Traveling Salesman Problem")
 
 frm = ttk.Frame(root, padding=10)
@@ -68,5 +71,31 @@ ttk.Button(frm, text="Quit", command=root.quit).grid(column=1, row=7)
 
 result_label = ttk.Label(frm, text="", foreground="blue")
 result_label.grid(column=0, row=10, columnspan=2, pady=10)
+
+
+def show_plot_in_tkinter(coords, tour):
+    fig = Figure(figsize=(6, 4), dpi=100)
+    plot = fig.add_subplot(111)
+
+    x = [coords[city][0] for city in tour] + [coords[tour[0]][0]]
+    y = [coords[city][1] for city in tour] + [coords[tour[0]][1]]
+
+    plot.plot(x, y, 'o-', color='blue')
+    for i, city in enumerate(tour):
+        plot.text(coords[city][0], coords[city][1], str(city), fontsize=8, color='red')
+
+    plot.set_title("ACO Best Tour")
+    plot.set_xlabel("X")
+    plot.set_ylabel("Y")
+    plot.grid(True)
+
+    global canvas_widget
+    if canvas_widget:
+        canvas_widget.get_tk_widget().destroy()
+
+    canvas_widget = FigureCanvasTkAgg(fig, master=frm)
+    canvas_widget.draw()
+    canvas_widget.get_tk_widget().grid(column=0, row=11, columnspan=2, pady=10)
+
 
 root.mainloop()
