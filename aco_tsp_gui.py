@@ -1,45 +1,9 @@
 import main
 from tkinter import *
-from tkinter import ttk
+from tkinter import ttk, filedialog
 from utils import functions
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
-
-root = Tk()
-canvas_widget = None
-progress_canvas_widget = None
-root.title("ACO TSP - Traveling Salesman Problem")
-root.geometry("1300x700")
-
-frm = ttk.Frame(root, padding=10)
-frm.grid()
-
-ttk.Label(frm, text="Implementation of the ACO ant algorithm in the traveling salesman problem").grid(column=0, row=0, columnspan=2)
-ttk.Label(frm, text="Enter the selected parameters").grid(column=0, row=1, columnspan=2)
-
-ttk.Label(frm, text="Path to tsp file:").grid(column=0, row=2)
-tsp_entry = ttk.Entry(frm)
-tsp_entry.grid(column=1, row=2)
-
-ttk.Label(frm, text="Number of ants:").grid(column=0, row=3)
-ants_entry = ttk.Entry(frm)
-ants_entry.grid(column=1, row=3)
-
-ttk.Label(frm, text="Number of iterations:").grid(column=0, row=4)
-iterations_entry = ttk.Entry(frm)
-iterations_entry.grid(column=1, row=4)
-
-ttk.Label(frm, text="Pheromone evaporation rate:").grid(column=0, row=5)
-evaporation_entry = ttk.Entry(frm)
-evaporation_entry.grid(column=1, row=5)
-
-ttk.Label(frm, text="Starting city (index):").grid(column=0, row=6)
-start_city_entry = ttk.Entry(frm)
-start_city_entry.grid(column=1, row=6)
-
-result_label = ttk.Label(frm, text="", foreground="blue")
-result_label.grid(column=0, row=11, columnspan=2, pady=10)
 
 
 def get_parameters():
@@ -123,6 +87,53 @@ def show_progress_plot(progress):
     progress_canvas_widget.draw()
     progress_canvas_widget.get_tk_widget().grid(column=1, row=13, padx=10, pady=10, sticky="n")
 
+
+def select_file_on_click(event):
+    file_path = filedialog.askopenfilename(
+        initialdir="resources",
+        title="Select TSP File",
+        filetypes=(("TSP files", "*.tsp"), ("All files", "*.*"))
+    )
+    if file_path:
+        tsp_entry.delete(0, END)
+        tsp_entry.insert(0, file_path)
+
+
+root = Tk()
+canvas_widget = None
+progress_canvas_widget = None
+root.title("ACO TSP - Traveling Salesman Problem")
+root.geometry("1300x700")
+
+frm = ttk.Frame(root, padding=10)
+frm.grid()
+
+ttk.Label(frm, text="Implementation of the ACO ant algorithm in the traveling salesman problem").grid(column=0, row=0, columnspan=2)
+ttk.Label(frm, text="Enter the selected parameters").grid(column=0, row=1, columnspan=2)
+
+ttk.Label(frm, text="Path to tsp file:").grid(column=0, row=2)
+tsp_entry = ttk.Entry(frm)
+tsp_entry.grid(column=1, row=2)
+tsp_entry.bind("<Button-1>", select_file_on_click)
+
+ttk.Label(frm, text="Number of ants:").grid(column=0, row=3)
+ants_entry = ttk.Entry(frm)
+ants_entry.grid(column=1, row=3)
+
+ttk.Label(frm, text="Number of iterations:").grid(column=0, row=4)
+iterations_entry = ttk.Entry(frm)
+iterations_entry.grid(column=1, row=4)
+
+ttk.Label(frm, text="Pheromone evaporation rate:").grid(column=0, row=5)
+evaporation_entry = ttk.Entry(frm)
+evaporation_entry.grid(column=1, row=5)
+
+ttk.Label(frm, text="Starting city (index):").grid(column=0, row=6)
+start_city_entry = ttk.Entry(frm)
+start_city_entry.grid(column=1, row=6)
+
+result_label = ttk.Label(frm, text="", foreground="blue")
+result_label.grid(column=0, row=11, columnspan=2, pady=10)
 
 ttk.Button(frm, text="Submit", command=get_parameters).grid(column=0, row=8, columnspan=2)
 ttk.Button(frm, text="Quit", command=root.quit).grid(column=1, row=8)
