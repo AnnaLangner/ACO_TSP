@@ -46,5 +46,8 @@ A user window will appear where you can add parameters such as:
 * Number of ants `50`
 * Number of iterations `100`
 * Pheromone evaporation rate `0.3`
+* index of city `5`
 
 After clicking the submit button, the best route is calculated. It gives the city numbers in the order the ant passed through, as well as the best route length.
+
+Two graphs will appear under the calculated data. The first shows the best route, and the second shows how the length of the routes changed depending on the iteration performed.
