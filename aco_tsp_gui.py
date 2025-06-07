@@ -30,10 +30,36 @@ def draw_chart(lengths):
     ax.set_xlabel("Iteration")
     ax.set_ylabel("Length (km)")
     ax.grid(True)
+    fig.tight_layout()
 
     chart = FigureCanvasTkAgg(fig, master=chart_frame)
     chart.draw()
     chart.get_tk_widget().pack()
+
+
+def draw_path_plot(tour, coords):
+    for widget in path_frame.winfo_children():
+        widget.destroy()
+
+    fig = plt.Figure(figsize=(5, 3), dpi=100)
+    ax = fig.add_subplot(111)
+
+    tour_coords = [coords[i] for i in tour]
+    tour_coords.append(tour_coords[0])
+
+    lats = [lat for lat, lon in tour_coords]
+    lons = [lon for lat, lon in tour_coords]
+
+    ax.plot(lons, lats, marker='', linestyle='-', color='green')
+    ax.set_title("Best Path Map")
+    ax.set_xlabel("Longitude")
+    ax.set_ylabel("Latitude")
+    ax.grid(True)
+    fig.tight_layout()
+
+    canvas = FigureCanvasTkAgg(fig, master=path_frame)
+    canvas.draw()
+    canvas.get_tk_widget().pack()
 
 
 def get_parameters():
@@ -64,6 +90,7 @@ def get_parameters():
         )
 
         draw_chart(result["lengths_over_time"])
+        draw_path_plot(result["best_path"], result["coordinates"])
 
     except ValueError:
         result_label.config(text="Please enter valid numbers.")
@@ -102,7 +129,12 @@ ttk.Button(frm, text="Quit", command=root.quit).grid(column=1, row=7)
 result_label = ttk.Label(frm, text="", foreground="blue")
 result_label.grid(column=0, row=8, columnspan=2, pady=10)
 chart_frame = ttk.Frame(frm)
-chart_frame.grid(column=0, row=10, columnspan=2, pady=10)
+chart_frame.grid(column=0, row=10, padx=10, pady=10, sticky="nsew")
+path_frame = ttk.Frame(frm)
+path_frame.grid(column=1, row=10, padx=10, pady=10, sticky="nsew")
+frm.columnconfigure(0, weight=1)
+frm.columnconfigure(1, weight=1)
+frm.rowconfigure(10, weight=1)
 
 
 root.mainloop()

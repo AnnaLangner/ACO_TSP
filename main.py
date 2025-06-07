@@ -52,7 +52,8 @@ def ant_colony_optimization(filename, num_ants, num_iterations, rho):
     return {
         'best_path': best_tour,
         'best_cost': best_length,
-        'lengths_over_time': best_lengths_over_time
+        'lengths_over_time': best_lengths_over_time,
+        'coordinates': coords
     }
 
 
