@@ -1,6 +1,9 @@
-from tkinter import *
-from tkinter import ttk, filedialog
 import main
+from tkinter import *
+import matplotlib.pyplot as plt
+from tkinter import ttk, filedialog
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
 
 selected_file_path = ""
 
@@ -14,6 +17,23 @@ def choose_file():
     if file_path:
         selected_file_path = file_path
         file_label.config(text=f"Selected file: {file_path}")
+
+
+def draw_chart(lengths):
+    for widget in chart_frame.winfo_children():
+        widget.destroy()
+
+    fig = plt.Figure(figsize=(5, 3), dpi=100)
+    ax = fig.add_subplot(111)
+    ax.plot(range(1, len(lengths) + 1), lengths, marker='')
+    ax.set_title("Best Tour Length Over Iterations")
+    ax.set_xlabel("Iteration")
+    ax.set_ylabel("Length (km)")
+    ax.grid(True)
+
+    chart = FigureCanvasTkAgg(fig, master=chart_frame)
+    chart.draw()
+    chart.get_tk_widget().pack()
 
 
 def get_parameters():
@@ -42,6 +62,8 @@ def get_parameters():
         result_label.config(
             text=f"Best tour: {result['best_path']}\nBest tour length: {round(result['best_cost'], 2)} km"
         )
+
+        draw_chart(result["lengths_over_time"])
 
     except ValueError:
         result_label.config(text="Please enter valid numbers.")
@@ -79,5 +101,8 @@ ttk.Button(frm, text="Quit", command=root.quit).grid(column=1, row=7)
 
 result_label = ttk.Label(frm, text="", foreground="blue")
 result_label.grid(column=0, row=8, columnspan=2, pady=10)
+chart_frame = ttk.Frame(frm)
+chart_frame.grid(column=0, row=10, columnspan=2, pady=10)
+
 
 root.mainloop()

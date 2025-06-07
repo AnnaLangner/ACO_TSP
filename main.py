@@ -4,6 +4,7 @@ from utils import functions
 
 
 def ant_colony_optimization(filename, num_ants, num_iterations, rho):
+    import matplotlib.pyplot as plt
     coords = functions.read_tsp_file(filename)
     n = len(coords)
     distance_matrix = functions.build_distance_matrix(coords)
@@ -11,6 +12,7 @@ def ant_colony_optimization(filename, num_ants, num_iterations, rho):
 
     best_length = float('inf')
     best_tour = None
+    best_lengths_over_time = []
 
     for iteration in range(num_iterations):
         ants = []
@@ -41,6 +43,7 @@ def ant_colony_optimization(filename, num_ants, num_iterations, rho):
                 best_length = total_length
                 best_tour = tour
 
+        best_lengths_over_time.append(best_length)
         functions.update_pheromones(ants, lengths, pheromone_matrix, distance_matrix, n, rho, num_ants)
 
         # Debug output
@@ -48,7 +51,8 @@ def ant_colony_optimization(filename, num_ants, num_iterations, rho):
 
     return {
         'best_path': best_tour,
-        'best_cost': best_length
+        'best_cost': best_length,
+        'lengths_over_time': best_lengths_over_time
     }
 
 
