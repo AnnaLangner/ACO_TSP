@@ -52,8 +52,8 @@ def draw_path_plot(tour, coords):
 
     ax.plot(lons, lats, marker='', linestyle='-', color='green')
     ax.set_title("Best Path Map")
-    ax.set_xlabel("Longitude")
-    ax.set_ylabel("Latitude")
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
     ax.grid(True)
     fig.tight_layout()
 

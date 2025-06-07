@@ -4,10 +4,10 @@ from utils import functions
 
 
 def ant_colony_optimization(filename, num_ants, num_iterations, rho):
-    import matplotlib.pyplot as plt
-    coords = functions.read_tsp_file(filename)
+    coords, distance_type = functions.read_tsp_file(filename)
     n = len(coords)
-    distance_matrix = functions.build_distance_matrix(coords)
+    distance_matrix = functions.build_distance_matrix(coords, distance_type)
+
     pheromone_matrix = functions.initialize_pheromones(n)
 
     best_length = float('inf')

@@ -22,10 +22,16 @@ def calculate_distance(lat1, lon1, lat2, lon2):
 
 def read_tsp_file(filename):
     coordinates = []
+    edge_weight_type = "EUC_2D"
+
     with open(filename, 'r') as f:
         lines = f.readlines()
         reading_nodes = False
+
         for line in lines:
+            line = line.strip()
+            if line.startswith("EDGE_WEIGHT_TYPE"):
+                edge_weight_type = line.split(":")[1].strip()
             if "NODE_COORD_SECTION" in line:
                 reading_nodes = True
                 continue
@@ -33,22 +39,37 @@ def read_tsp_file(filename):
                 break
             if reading_nodes:
                 parts = line.split()
-                if len(parts) >= 3:
-                    lat = float(parts[1])
-                    lon = float(parts[2])
-                    coordinates.append((lat, lon))
-    return coordinates
+                lat = float(parts[1])
+                lon = float(parts[2])
+                coordinates.append((lat, lon))
+
+    return coordinates, edge_weight_type
 
 
-def build_distance_matrix(coords):
+def calculate_att_distance(x1, y1, x2, y2):
+    xd = x1 - x2
+    yd = y1 - y2
+    rij = math.sqrt((xd * xd + yd * yd) / 10.0)
+    tij = int(round(rij))
+    return tij + 1 if tij < rij else tij
+
+
+def build_distance_matrix(coords, distance_type="EUC_2D"):
     n = len(coords)
     matrix = [[0 for _ in range(n)] for _ in range(n)]
+
     for i in range(n):
         for j in range(i + 1, n):
-            lat1, lon1 = coords[i]
-            lat2, lon2 = coords[j]
-            dist = calculate_distance(lat1, lon1, lat2, lon2)
+            x1, y1 = coords[i]
+            x2, y2 = coords[j]
+
+            if distance_type == "ATT":
+                dist = calculate_att_distance(x1, y1, x2, y2)
+            else:
+                dist = calculate_distance(x1, y1, x2, y2)
+
             matrix[i][j] = matrix[j][i] = dist
+
     return matrix
 
 
@@ -100,3 +121,16 @@ def update_pheromones(ants, lengths, pheromone_matrix, distance_matrix, n, rho, 
             delta = Q / length
             pheromone_matrix[current_city][next_city] += delta
             pheromone_matrix[next_city][current_city] += delta
+
+
+def polar_sort(coords):
+    center_lat = sum(lat for lat, lon in coords) / len(coords)
+    center_lon = sum(lon for lat, lon in coords) / len(coords)
+
+    def angle(point):
+        lat, lon = point
+        return math.atan2(lat - center_lat, lon - center_lon)
+
+    sorted_coords = sorted(enumerate(coords), key=lambda x: angle(x[1]))
+    sorted_indices = [index for index, _ in sorted_coords]
+    return sorted_indices
