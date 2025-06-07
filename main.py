@@ -16,7 +16,7 @@ def ant_colony_optimization(filename, num_ants, num_iterations, rho):
         ants = []
         lengths = []
 
-        for ant in range(num_ants):
+        for _ in range(num_ants):
             visited = [False] * n
             tour = []
             total_length = 0.0
@@ -26,8 +26,10 @@ def ant_colony_optimization(filename, num_ants, num_iterations, rho):
             tour.append(start_city)
 
             for step in range(1, n):
-                current_city = tour[step - 1]
+                current_city = tour[-1]
                 next_city = functions.choose_next_city(current_city, visited, n, pheromone_matrix, distance_matrix)
+                if next_city == -1:
+                    break
                 visited[next_city] = True
                 tour.append(next_city)
                 total_length += distance_matrix[current_city][next_city]
@@ -41,7 +43,7 @@ def ant_colony_optimization(filename, num_ants, num_iterations, rho):
 
         functions.update_pheromones(ants, lengths, pheromone_matrix, distance_matrix, n, rho, num_ants)
 
-        # Left for debugging purposes
+        # Debug output
         # print(f"Iteration {iteration + 1}: Best Length = {best_length:.2f} km")
 
     return {
@@ -51,14 +53,13 @@ def ant_colony_optimization(filename, num_ants, num_iterations, rho):
 
 
 if __name__ == '__main__':
-    tsp_file = 'resources/berlin52.tsp'
     parser = argparse.ArgumentParser(description="Ant Colony Optimization for TSP")
     parser.add_argument("tsp_file", type=str, help="Path to the TSP file")
     parser.add_argument("--num_ants", type=int, default=50, help="Number of ants (default: 50)")
     parser.add_argument("--num_iterations", type=int, default=100, help="Number of iterations (default: 100)")
-    parser.add_argument("--rho", type=float, default=0.3, help="Number of rho between 0.1 and 1")
+    parser.add_argument("--rho", type=float, default=0.3, help="Pheromone evaporation rate (0 < rho < 1)")
     args = parser.parse_args()
 
-    best_tour, best_length = ant_colony_optimization(tsp_file, args.num_ants, args.num_iterations, args.rho)
-    print("\nBest tour:", best_tour)
-    print("Best tour length:", best_length, "km")
+    result = ant_colony_optimization(args.tsp_file, args.num_ants, args.num_iterations, args.rho)
+    print("\nBest tour:", result['best_path'])
+    print("Best tour length:", round(result['best_cost'], 2), "km")
