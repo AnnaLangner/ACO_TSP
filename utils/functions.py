@@ -1,10 +1,9 @@
-import math
 import random
-import matplotlib.pyplot as plt
+import math
 
-ALPHA = 1.0   # Influence of pheromone
-BETA = 2.0    # Influence of distance
-Q = 100.0     # Constant for pheromone deposition
+ALPHA = 1.0
+BETA = 2.0
+Q = 100.0
 
 
 def calculate_distance(lat1, lon1, lat2, lon2):
@@ -18,15 +17,21 @@ def calculate_distance(lat1, lon1, lat2, lon2):
 
     a = math.sin(dlat / 2)**2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon / 2)**2
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    return c
+    return c * 6371
 
 
 def read_tsp_file(filename):
     coordinates = []
+    edge_weight_type = "EUC_2D"
+
     with open(filename, 'r') as f:
         lines = f.readlines()
         reading_nodes = False
+
         for line in lines:
+            line = line.strip()
+            if line.startswith("EDGE_WEIGHT_TYPE"):
+                edge_weight_type = line.split(":")[1].strip()
             if "NODE_COORD_SECTION" in line:
                 reading_nodes = True
                 continue
@@ -37,24 +42,39 @@ def read_tsp_file(filename):
                 lat = float(parts[1])
                 lon = float(parts[2])
                 coordinates.append((lat, lon))
-    return coordinates
+
+    return coordinates, edge_weight_type
 
 
-def build_distance_matrix(coords):
+def calculate_att_distance(x1, y1, x2, y2):
+    xd = x1 - x2
+    yd = y1 - y2
+    rij = math.sqrt((xd * xd + yd * yd) / 10.0)
+    tij = int(round(rij))
+    return tij + 1 if tij < rij else tij
+
+
+def build_distance_matrix(coords, distance_type="EUC_2D"):
     n = len(coords)
     matrix = [[0 for _ in range(n)] for _ in range(n)]
+
     for i in range(n):
         for j in range(i + 1, n):
-            lat1, lon1 = coords[i]
-            lat2, lon2 = coords[j]
-            dist = calculate_distance(lat1, lon1, lat2, lon2)
+            x1, y1 = coords[i]
+            x2, y2 = coords[j]
+
+            if distance_type == "ATT":
+                dist = calculate_att_distance(x1, y1, x2, y2)
+            else:
+                dist = calculate_distance(x1, y1, x2, y2)
+
             matrix[i][j] = matrix[j][i] = dist
+
     return matrix
 
 
 def initialize_pheromones(n):
-    pheromone_matrix = [[1.0 for _ in range(n)] for _ in range(n)]
-    return pheromone_matrix
+    return [[1.0 for _ in range(n)] for _ in range(n)]
 
 
 def choose_next_city(current_city, visited, n, pheromone_matrix, distance_matrix):
@@ -62,11 +82,15 @@ def choose_next_city(current_city, visited, n, pheromone_matrix, distance_matrix
     sum_probabilities = 0.0
 
     for i in range(n):
-        if not visited[i]:
+        if not visited[i] and distance_matrix[current_city][i] > 0:
             pheromone = pheromone_matrix[current_city][i] ** ALPHA
             distance = (1.0 / distance_matrix[current_city][i]) ** BETA
             probabilities[i] = pheromone * distance
             sum_probabilities += probabilities[i]
+
+    if sum_probabilities == 0.0:
+        not_visited = [i for i in range(n) if not visited[i]]
+        return random.choice(not_visited) if not_visited else -1
 
     for i in range(n):
         probabilities[i] /= sum_probabilities
@@ -78,7 +102,9 @@ def choose_next_city(current_city, visited, n, pheromone_matrix, distance_matrix
             cumulative_prob += probabilities[i]
             if rand <= cumulative_prob:
                 return i
-    return -1
+
+    not_visited = [i for i in range(n) if not visited[i]]
+    return random.choice(not_visited) if not_visited else -1
 
 
 def update_pheromones(ants, lengths, pheromone_matrix, distance_matrix, n, rho, num_ants):
@@ -92,23 +118,19 @@ def update_pheromones(ants, lengths, pheromone_matrix, distance_matrix, n, rho, 
         for i in range(len(ant) - 1):
             current_city = ant[i]
             next_city = ant[i + 1]
-            pheromone_matrix[current_city][next_city] += Q / length
-            pheromone_matrix[next_city][current_city] += Q / length
+            delta = Q / length
+            pheromone_matrix[current_city][next_city] += delta
+            pheromone_matrix[next_city][current_city] += delta
 
 
-# for version in CLI
-def plot_tour(coords, tour, title="Best Tour"):
-    x = [coords[city][0] for city in tour] + [coords[tour[0]][0]]
-    y = [coords[city][1] for city in tour] + [coords[tour[0]][1]]
+def polar_sort(coords):
+    center_lat = sum(lat for lat, lon in coords) / len(coords)
+    center_lon = sum(lon for lat, lon in coords) / len(coords)
 
-    plt.figure(figsize=(10, 6))
-    plt.plot(x, y, 'o-', color='blue', label='Path')
-    for i, city in enumerate(tour):
-        plt.text(coords[city][0], coords[city][1], str(city), fontsize=9, color='red')
-    plt.title(title)
-    plt.xlabel("X")
-    plt.ylabel("Y")
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    plt.show()
+    def angle(point):
+        lat, lon = point
+        return math.atan2(lat - center_lat, lon - center_lon)
+
+    sorted_coords = sorted(enumerate(coords), key=lambda x: angle(x[1]))
+    sorted_indices = [index for index, _ in sorted_coords]
+    return sorted_indices
