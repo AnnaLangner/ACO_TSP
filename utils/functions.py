@@ -1,5 +1,6 @@
 import random
 import math
+import matplotlib.pyplot as plt
 
 ALPHA = 1.0
 BETA = 2.0
@@ -122,3 +123,90 @@ def polar_sort(coords):
     sorted_coords = sorted(enumerate(coords), key=lambda x: angle(x[1]))
     sorted_indices = [index for index, _ in sorted_coords]
     return sorted_indices
+
+
+def ant_colony_optimization(filename, num_ants, num_iterations, rho):
+    coords, distance_type = read_tsp_file(filename)
+    n = len(coords)
+    distance_matrix = build_distance_matrix(coords, distance_type)
+
+    pheromone_matrix = initialize_pheromones(n)
+
+    best_length = float('inf')
+    best_tour = None
+    best_lengths_over_time = []
+
+    for iteration in range(num_iterations):
+        ants = []
+        lengths = []
+
+        for _ in range(num_ants):
+            visited = [False] * n
+            tour = []
+            total_length = 0.0
+
+            start_city = random.randint(0, n - 1)
+            visited[start_city] = True
+            tour.append(start_city)
+
+            for step in range(1, n):
+                current_city = tour[-1]
+                next_city = choose_next_city(current_city, visited, n, pheromone_matrix, distance_matrix)
+                if next_city == -1:
+                    break
+                visited[next_city] = True
+                tour.append(next_city)
+                total_length += distance_matrix[current_city][next_city]
+
+            ants.append(tour)
+            lengths.append(total_length)
+
+            if total_length < best_length:
+                best_length = total_length
+                best_tour = tour
+
+        best_lengths_over_time.append(best_length)
+        update_pheromones(ants, lengths, pheromone_matrix, distance_matrix, n, rho, num_ants)
+
+        # Debug output
+        # print(f"Iteration {iteration + 1}: Best Length = {best_length:.2f} km")
+
+    return {
+        'best_path': best_tour,
+        'best_cost': best_length,
+        'lengths_over_time': best_lengths_over_time,
+        'coordinates': coords
+    }
+
+
+def draw_chart(lengths, filename="static/chart.png"):
+    fig = plt.Figure(figsize=(5, 3), dpi=100)
+    ax = fig.add_subplot(111)
+    ax.plot(range(1, len(lengths) + 1), lengths, marker='')
+    ax.set_title("Best Tour Length Over Iterations")
+    ax.set_xlabel("Iteration")
+    ax.set_ylabel("Length (km)")
+    ax.grid(True)
+    fig.tight_layout()
+    fig.savefig(filename)
+    plt.close(fig)
+
+
+def draw_path_plot(tour, coords, filename="static/path.png"):
+    fig = plt.Figure(figsize=(5, 3), dpi=100)
+    ax = fig.add_subplot(111)
+
+    tour_coords = [coords[i] for i in tour]
+    tour_coords.append(tour_coords[0])
+
+    lats = [lat for lat, lon in tour_coords]
+    lons = [lon for lat, lon in tour_coords]
+
+    ax.plot(lons, lats, marker='', linestyle='-', color='green')
+    ax.set_title("Best Path Map")
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
+    ax.grid(True)
+    fig.tight_layout()
+    fig.savefig(filename)
+    plt.close(fig)

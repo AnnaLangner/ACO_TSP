@@ -37,16 +37,14 @@ Raising the inverse of the distance to the power of BETA introduces a non-linear
 * If BETA < 1: The influence of distance becomes weaker, meaning ants may consider paths that are longer (though still influenced by the pheromone levels).
 
 ## Running project
+Before starting, install the requirements file
 
-To run backend in the terminal with argument , type ```python3 main.py 'resources/berlin52.tsp' --num_ants 20 --num_iterations 10 --rho 0.3```
-
-To run user interface in terminal type ```python3 aco_tsp_gui.py```
-A user window will appear where you can add parameters such as:
-* Path to tsp file `resources/att48.tsp`
+To run user interface in terminal type ```python3 main.py```
+After starting the application with the command, a website will open on port 5001 with filled parameters. The parameters can be changed freely:
+* Path to tsp file `berlin52.tsp`
 * Number of ants `50`
-* Number of iterations `100`
-* Pheromone evaporation rate `0.3`
-* index of city `5`
+* Number of iterations `150`
+* Pheromone evaporation rate `0.8`
 
 To select a tsp file, clicking on the text field automatically opened the file selection window from the resources' directory.
 

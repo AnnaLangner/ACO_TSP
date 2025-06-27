@@ -1,70 +1,50 @@
-import random
-import argparse
-from utils import functions
+import os
+from flask import Flask, render_template, request
+from utils.functions import draw_chart, draw_path_plot, ant_colony_optimization
 
 
-def ant_colony_optimization(filename, num_ants, num_iterations, rho):
-    coords, distance_type = functions.read_tsp_file(filename)
-    n = len(coords)
-    distance_matrix = functions.build_distance_matrix(coords, distance_type)
-
-    pheromone_matrix = functions.initialize_pheromones(n)
-
-    best_length = float('inf')
-    best_tour = None
-    best_lengths_over_time = []
-
-    for iteration in range(num_iterations):
-        ants = []
-        lengths = []
-
-        for _ in range(num_ants):
-            visited = [False] * n
-            tour = []
-            total_length = 0.0
-
-            start_city = random.randint(0, n - 1)
-            visited[start_city] = True
-            tour.append(start_city)
-
-            for step in range(1, n):
-                current_city = tour[-1]
-                next_city = functions.choose_next_city(current_city, visited, n, pheromone_matrix, distance_matrix)
-                if next_city == -1:
-                    break
-                visited[next_city] = True
-                tour.append(next_city)
-                total_length += distance_matrix[current_city][next_city]
-
-            ants.append(tour)
-            lengths.append(total_length)
-
-            if total_length < best_length:
-                best_length = total_length
-                best_tour = tour
-
-        best_lengths_over_time.append(best_length)
-        functions.update_pheromones(ants, lengths, pheromone_matrix, distance_matrix, n, rho, num_ants)
-
-        # Debug output
-        # print(f"Iteration {iteration + 1}: Best Length = {best_length:.2f} km")
-
-    return {
-        'best_path': best_tour,
-        'best_cost': best_length,
-        'lengths_over_time': best_lengths_over_time,
-        'coordinates': coords
-    }
+app = Flask(__name__)
+RESOURCES_FOLDER = 'resources'
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Ant Colony Optimization for TSP")
-    parser.add_argument("tsp_file", type=str, help="Path to the TSP file")
-    parser.add_argument("--num_ants", type=int, default=50, help="Number of ants (default: 50)")
-    parser.add_argument("--num_iterations", type=int, default=100, help="Number of iterations (default: 100)")
-    parser.add_argument("--rho", type=float, default=0.3, help="Pheromone evaporation rate (0 < rho < 1)")
-    args = parser.parse_args()
+@app.route("/", methods=["GET", "POST"])
+def index():
+    tsp_files = os.listdir(RESOURCES_FOLDER)
 
-    result = ant_colony_optimization(args.tsp_file, args.num_ants, args.num_iterations, args.rho)
-    print("\nBest tour:", result['best_path'])
-    print("Best tour length:", round(result['best_cost'], 2), "km")
+    if request.method == "POST":
+        selected_filename = request.form.get("selected_file")
+
+        if not selected_filename:
+            return render_template("index.html", tsp_files=tsp_files, error="No file selected.")
+
+    if request.method == "POST":
+        selected_filename = request.form.get("selected_file")
+        num_ants = int(request.form.get("num_ants", 50))
+        num_iterations = int(request.form.get("num_iterations", 100))
+        rho = float(request.form.get("rho", 0.3))
+
+        filepath = os.path.join(RESOURCES_FOLDER, selected_filename)
+
+        if os.path.exists(filepath):
+            result = ant_colony_optimization(filepath, num_ants, num_iterations, rho)
+            draw_chart(result["lengths_over_time"], filename="static/chart.png")
+            draw_path_plot(result["best_path"], result["coordinates"], filename="static/path.png")
+
+            return render_template(
+                "index.html",
+                tsp_files=tsp_files,
+                result=result,
+                best_cost=round(result["best_cost"], 2),
+                best_path=result["best_path"],
+                chart_path="static/chart.png",
+                path_image="static/path.png"
+            )
+        else:
+            return render_template("index.html", tsp_files=tsp_files, error="The file does not exist.")
+
+    return render_template("index.html", tsp_files=tsp_files)
+
+
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=5001)
+

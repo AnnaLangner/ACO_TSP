@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TSP Ant Colony Optimization</title>
+</head>
+<body>
+    <h1>TSP Solver – Ant Colony Optimization</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+        <label for="selected_file">Load TSP file:</label>
+        <select name="selected_file" id="selected_file" required>
+            {% for tsp in tsp_files %}
+                <option value="{{ tsp }}">{{ tsp }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Number of ants:</label>
+        <input type="number" name="num_ants" min="1" max="100" value="50" required><br>
+
+        <label>Number of iterations:</label>
+        <input type="number" name="num_iterations" value="150" min="1" max="1000" required><br>
+
+        <label>Evaporation coefficient (rho):</label>
+        <input type="number" step="0.01" name="rho" value="0.8" min="0.1" max="1.0" required><br><br>
+
+        <button type="submit">Run</button>
+    </form>
+
+    {% if result %}
+        <h2>Result:</h2>
+        <p><strong>The best route:</strong> {{ best_path }}</p>
+        <p><strong>Route length:</strong> {{ best_cost }}</p>
+
+        <h3>Route length chart:</h3>
+        <img src="{{ chart_path }}" alt="Quality Over time">
+
+        <h3>Route visualization:</h3>
+        <img src="{{ path_image }}" alt="Tour map">
+    {% elif error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+</body>
+</html>
