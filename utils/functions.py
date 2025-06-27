@@ -6,20 +6,6 @@ BETA = 2.0
 Q = 100.0
 
 
-def calculate_distance(lat1, lon1, lat2, lon2):
-    lat1_rad = math.radians(lat1)
-    lon1_rad = math.radians(lon1)
-    lat2_rad = math.radians(lat2)
-    lon2_rad = math.radians(lon2)
-
-    dlat = lat2_rad - lat1_rad
-    dlon = lon2_rad - lon1_rad
-
-    a = math.sin(dlat / 2)**2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon / 2)**2
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    return c * 6371
-
-
 def read_tsp_file(filename):
     coordinates = []
     edge_weight_type = "EUC_2D"
@@ -31,7 +17,7 @@ def read_tsp_file(filename):
         for line in lines:
             line = line.strip()
             if line.startswith("EDGE_WEIGHT_TYPE"):
-                edge_weight_type = line.split(":")[1].strip()
+                edge_weight_type = line.split(":")[1].strip().upper()
             if "NODE_COORD_SECTION" in line:
                 reading_nodes = True
                 continue
@@ -65,8 +51,10 @@ def build_distance_matrix(coords, distance_type="EUC_2D"):
 
             if distance_type == "ATT":
                 dist = calculate_att_distance(x1, y1, x2, y2)
+            elif distance_type == "EUC_2D":
+                dist = math.hypot(x1 - x2, y1 - y2)
             else:
-                dist = calculate_distance(x1, y1, x2, y2)
+                raise ValueError(f"Unsupported distance type: {distance_type}")
 
             matrix[i][j] = matrix[j][i] = dist
 
